@@ -19,13 +19,13 @@ EOT
     location            = string
     name                = string
     resource_group_name = string
-    auto_renew          = optional(bool, true)
+    auto_renew          = optional(bool) # Default: true
     csr                 = optional(string)
     distinguished_name  = optional(string)
-    key_size            = optional(number, 2048)
-    product_type        = optional(string, "Standard")
+    key_size            = optional(number) # Default: 2048
+    product_type        = optional(string) # Default: "Standard"
     tags                = optional(map(string))
-    validity_in_years   = optional(number, 1)
+    validity_in_years   = optional(number) # Default: 1
   }))
 }
 
