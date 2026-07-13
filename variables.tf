@@ -19,50 +19,21 @@ EOT
     location            = string
     name                = string
     resource_group_name = string
-    auto_renew          = optional(bool) # Default: true
+    auto_renew          = optional(bool)
     csr                 = optional(string)
     distinguished_name  = optional(string)
-    key_size            = optional(number) # Default: 2048
-    product_type        = optional(string) # Default: "Standard"
+    key_size            = optional(number)
+    product_type        = optional(string)
     tags                = optional(map(string))
-    validity_in_years   = optional(number) # Default: 1
+    validity_in_years   = optional(number)
   }))
-  validation {
-    condition = alltrue([
-      for k, v in var.app_service_certificate_orders : (
-        length(v.name) > 0
-      )
-    ])
-    error_message = "must not be empty"
-  }
-  validation {
-    condition = alltrue([
-      for k, v in var.app_service_certificate_orders : (
-        v.key_size == null || (v.key_size >= 0)
-      )
-    ])
-    error_message = "must be at least 0"
-  }
-  validation {
-    condition = alltrue([
-      for k, v in var.app_service_certificate_orders : (
-        v.product_type == null || (contains(["Standard", "WildCard"], v.product_type))
-      )
-    ])
-    error_message = "must be one of: Standard, WildCard"
-  }
-  validation {
-    condition = alltrue([
-      for k, v in var.app_service_certificate_orders : (
-        v.validity_in_years == null || (v.validity_in_years >= 1 && v.validity_in_years <= 3)
-      )
-    ])
-    error_message = "must be between 1 and 3"
-  }
   # --- Unconfirmed validation candidates, derived from azurerm_app_service_certificate_order's provider source ---
   # Not auto-enabled: either a bespoke provider validator we can't safely translate,
   # or a path that crosses a list-typed block (needs its own for_each wrapping).
   # Review, translate into a real validation{} block above, and delete once confirmed.
+  # path: name
+  #   condition: length(value) > 0
+  #   message:   must not be empty
   # path: location
   #   source:    location.EnhancedValidate: no recognizable `if ... { errors = append(...) }` pattern - read it by hand
   # path: resource_group_name
@@ -79,6 +50,15 @@ EOT
   #   source:    [from resourcegroups.ValidateName: invalid when len(value) == 0]
   # path: resource_group_name
   #   source:    [from resourcegroups.ValidateName] !matched
+  # path: key_size
+  #   condition: value >= 0
+  #   message:   must be at least 0
+  # path: product_type
+  #   condition: contains(["Standard", "WildCard"], value)
+  #   message:   must be one of: Standard, WildCard
+  # path: validity_in_years
+  #   condition: value >= 1 && value <= 3
+  #   message:   must be between 1 and 3
   # path: tags
   #   condition: length(value) <= 50
   #   message:   [from tags.Validate: invalid when len(value) > 50]
